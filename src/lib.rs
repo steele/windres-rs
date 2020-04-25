@@ -1,4 +1,5 @@
 // Copyright (c) 2017-2018 FaultyRAM
+// Copyright (c) 2020 James Steele
 //
 // Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 // http://www.apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
@@ -12,7 +13,6 @@
 //! which are embedded into a binary at link time. Currently, Rust does not natively support .rc
 //! files, so this crate must be used instead to achieve the same effect.
 
-#![cfg(target_os = "windows")]
 #![forbid(warnings)]
 #![deny(unused)]
 #![forbid(box_pointers)]

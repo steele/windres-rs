@@ -1,4 +1,5 @@
 // Copyright (c) 2017-2018 FaultyRAM
+// Copyright (c) 2020 James Steele
 //
 // Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 // http://www.apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
@@ -17,6 +18,19 @@ use Build;
 impl Build {
     /// Locates the tool used to compile resources.
     pub(crate) fn find_resource_compiler() -> io::Result<PathBuf> {
+        if cfg!(target_os = "linux") {
+            Self::find_resource_compiler_linux()
+        } else if cfg!(target_os = "windows") {
+            Self::find_resource_compiler_windows()
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "unsupported target"
+            ))
+        }
+    }
+
+    fn find_resource_compiler_windows() -> io::Result<PathBuf> {
         if let Some(p) = env::var_os("PATH").and_then(|path| {
             env::split_paths(&path)
                 .map(|p| p.join("windres.exe"))
@@ -27,6 +41,26 @@ impl Build {
             Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "could not locate windres.exe",
+            ))
+        }
+    }
+
+    fn find_resource_compiler_linux() -> io::Result<PathBuf> {
+        // Try some hardcoded locations...
+        // FIXME: may be better to construct the file names based upon current
+        // target (e.g. i686 vs x86_64)
+        if let Some(p) = [
+            "/usr/bin/x86_64-w64-mingw32-windres", // debian
+        ].iter()
+            .map(|p| PathBuf::from(p))
+            .find(|p| p.exists())
+        {
+            Ok(p)
+        } else {
+            // Could try searching $PATH for windres, but that isn't implemented yet
+            Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "could not locate windres",
             ))
         }
     }
